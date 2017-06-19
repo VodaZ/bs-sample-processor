@@ -2,6 +2,7 @@
     require "functions.php";
 
     $folderName = getFolderName();
+    echo "Editting: " . $folderName . "\n";
 
     $filteredSamples = getSamples($folderName); // get images of samples
     $numberImages = getNumberImages();          // get images of numbers
@@ -29,7 +30,7 @@
         $source = array_slice($filteredSamples, $i * $imgsPerPage, $imgsPerPage);
         createImgFromArray($source);
 
-        imagejpeg($newImage, $folderName.'/new/out'.$i.'.jpg');
+        imagejpeg($newImage, $folderName.'/new/'.$collectionName.'-'.$folderName.'-'.$i.'.jpg');
 
         imagecolordeallocate($newImage, $white);
         imagecolordeallocate($newImage, $black);

@@ -1,7 +1,4 @@
 <?php
-
-
-
     $spacing = 150;     // spacing between images
     $margin = Array(
         "TB" => 150,    // top, bottom
@@ -13,5 +10,7 @@
     $fontSize = 60;
 
     $procentualMarginOfLegend = 0.15;
+
+    $collectionName = 'Linterno';
 
 ?>
