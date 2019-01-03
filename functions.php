@@ -10,12 +10,18 @@ function print_array($ar)
     echo "}\n";
 }
 
-function getFolderName(){
-    $x = array_filter(scandir("."), function($name){
-        return preg_match("/L[0-9]{4}/i", $name);
-    });
+function getFolderName($root, $colNum){
+    global $collectionName;
+    $folders = scandir($root);
+    $folder = current(array_filter($folders, function($folder) use ($colNum) {
+        return $colNum === intval($folder);
+    }));
 
-    return array_values($x)[0];
+    $startPos = strpos($folder, ' - ') + 3;
+    $endPos = strlen($folder);
+    $collectionName = substr($folder, $startPos, $endPos);
+
+    return $root . $folder;
 }
 
 function getImagesSize($arr)
@@ -41,7 +47,7 @@ function getImagesSize($arr)
 function getSamples($folderName){
     $rawContent = scandir($folderName);
     $filteredContent = array_filter($rawContent, function($el){
-        return substr($el, 0, 3) == "Col";
+        return substr($el, 0, 3) == "Col" || substr($el, 0, 3) == "col";
     });
 
     $filteredContent = array_map(function($imgName){
@@ -109,6 +115,22 @@ function compoundNumber($val){
     ];
 }
 
+function getFileType($path){
+    $pathLen = strlen($path);
+
+    $a = strpos($path, '.', $pathLen - 6);
+    $b = strpos($path, '.', $pathLen - 6);
+    $dotPos = $a ? $a : $b;
+
+    $extension = substr($path, $dotPos + 1, $pathLen);
+
+    if(strtolower($extension) === 'jpeg' || strtolower($extension) === 'jpg'){
+        return 'jpg';
+    }
+
+    return $extension;
+}
+
 function createImgFromArray($filteredSamples){
     global $newImgSize;
     global $imgsPerPage;
@@ -119,7 +141,14 @@ function createImgFromArray($filteredSamples){
     global $procentualMarginOfLegend;
 
     for($i = 0; $i < $imgsPerPage; $i++){
-        $modelImg = @imagecreatefromjpeg($filteredSamples[$i]);
+        switch (getFileType($filteredSamples[$i])){
+            case 'jpg':
+                $modelImg = @imagecreatefromjpeg($filteredSamples[$i]);
+                break;
+            case 'png':
+                $modelImg = @imagecreatefrompng($filteredSamples[$i]);
+        }
+
         if(!$modelImg) break;
 
         $x_dst = $margin["LR"];
@@ -135,7 +164,7 @@ function createImgFromArray($filteredSamples){
         $x_number = $sampleNumberImg["dim"]["x"] / $resizeFactor;
         $y_number = $sampleNumberImg["dim"]["y"] / $resizeFactor;
 
-        imagecopyresized($newImage, $sampleNumberImg["img"], $x_dst, $y_dst + $imageSize["y"] + $spacing * $procentualMarginOfLegend, 0, 0, $x_number, $y_number, $sampleNumberImg["dim"]["x"], $sampleNumberImg["dim"]["y"]);
+        imagecopyresized($newImage, $sampleNumberImg["img"], -20, $y_dst + $imageSize["y"] + $spacing * $procentualMarginOfLegend, 0, 0, $x_number, $y_number, $sampleNumberImg["dim"]["x"], $sampleNumberImg["dim"]["y"]);
 
         imagedestroy($modelImg);
         imagedestroy($sampleNumberImg["img"]);
